@@ -1,0 +1,132 @@
+{
+  "name": "daily-crypto-update-workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/30 * * * *"
+            },
+            {
+              "field": "cronExpression"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a4fdbff0-4637-40bd-b052-00648936ea0e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,polkadot,ripple,tether&vs_currencies=usd",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "59682f3f-bca7-4b28-bd86-5eca9d067573",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const btc = $json.bitcoin.usd;\nconst eth = $json.ethereum.usd;\nconst dot = $json.polkadot.usd;\nconst xrp = $json.ripple.usd;\nconst usdt = $json.tether.usd;\n\nconst message = \n`📈 *Daily Crypto Prices (USD)*\n\n₿ *Bitcoin (BTC)*: $${btc}\nΞ *Ethereum (ETH)*: $${eth}\n⚪ *Polkadot (DOT)*: $${dot}\n✖ *XRP*: $${xrp}\n💵 *Tether (USDT)*: $${usdt}\n\n📅 ${new Date().toLocaleDateString()}`;\n\nreturn [\n  {\n    json: {\n      text: message\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "6891ad3b-b37f-4b20-8108-9815ac49f017",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "chatId": "7270031116",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        0
+      ],
+      "id": "86fb49ba-0e3d-4827-86b3-3cf70f811ef6",
+      "name": "Send a text message",
+      "webhookId": "68151996-ea21-400c-8a3a-81b32f42b8c3",
+      "credentials": {
+        "telegramApi": {
+          "id": "Tj24uwTerQrYrTwR",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b426f38b-8cc8-4485-84aa-c9b8d2c6abad",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "53a750259c04ac95b096f5171222cacd95e9bc92234f88e27e03210332afb898"
+  },
+  "id": "daNakjJXnQzSSXN1",
+  "tags": []
+}
